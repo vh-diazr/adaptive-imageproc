@@ -26,38 +26,38 @@ im = np.double( imread("peppers.png") )
 # Obtain image size
 Nr,Nc = im.shape
 
-Nsample = 50 #Number of noisy samples
+Nsample = 5000 #Number of noisy samples
 
 ens = np.zeros([Nr,Nc,Nsample]) #Contained for nosy image stochestic process
 
 sigN = 25.0 #Additive noise variance
 out = np.zeros([Nr,Nc]) #Container of the processed image
-MAE = np.zeros(Nsample)
+MSE = np.zeros(Nsample)
 #Create a nosy image ensamble
 for q in range(Nsample):
     noise = sigN * np.random.randn(Nr,Nc)
     ens[:,:,q] = im + noise
-    plt.figure(1)
-    plt.title('Stochastic process of the noisy image')
-    plt.imshow(abs(ens[:,:,q]), cmap='gray')
-    pause(0.01)
-    plt.show()
-    plt.clf()
+#    plt.figure(1)
+#    plt.title('Stochastic process of the noisy image')
+#    plt.imshow(abs(ens[:,:,q]), cmap='gray')
+#    pause(0.01)
+#    plt.show()
+#    plt.clf()
     
-    out = np.mean(ens,2) # Maximum-likelihood estimion of the output image (FAST!)
+    out = np.mean(ens,2) # Maximum-likelihood estimion of the output image (FAST)
     
     # Maximum-likelihood estimion of the output image (SLOW)
     #for k in range(Nr):
     #    for l in range(Nc):
     #        out[k,l] = np.mean(ens[k,l,np.arange(q)])
         
-    MAE[q] = np.mean( abs( im - out )**2 ) #Calculation of the Mean-Absolute-Error
+    MSE[q] = np.mean( abs( im - out )**2 ) #Calculation of the Mean-Absolute-Error
 print('Done!')
 
                         
-#MAE = mean( abs( im - out )**2 ) #Calculation of the Mean-Absolute-Error
+inp = ens[:,:,0].copy() #Example of noisy image for display
 
-leyend = 'Mean Absolute Error: ' + str(MAE[q])
+leyend = 'Mean Squared Error: ' + str(MSE[q])
 print(leyend)
 plt.figure()
 plt.subplot(131), plt.imshow(im, cmap='gray'), plt.title('Undegraded Image')
@@ -65,8 +65,4 @@ plt.subplot(132), plt.imshow(abs(inp), cmap='gray'), plt.title('Noisy Image')
 plt.subplot(133), plt.imshow(abs(out), cmap='gray'), plt.title('Processed Image')
 
 plt.figure()
-plt.plot(MAE,'-.*')
-plt.grid()
-plt.xlabel('No. of noisy images (sample size)')
-plt.ylabel('Mean Absolute Error')
-plt.title('Performance of the MLE estimator')
+plt.plot(MSE,'-.*'), plt.grid(), plt.xlabel('No. of noisy images (sample size)'), plt.ylabel('Mean Squared Error'), plt.title('Performance of the MLE estimator')
