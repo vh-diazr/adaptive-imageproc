@@ -26,25 +26,31 @@ im = np.double( imread("peppers.png") )
 # Obtain image size
 Nr,Nc = im.shape
 
-Nsample = 5000 #Number of noisy samples
+Nsample = 50 #Number of noisy samples
 
-ens = np.zeros([Nr,Nc,Nsample]) #Contained for nosy image stochestic process
+#ens = np.zeros([Nr,Nc,Nsample]) #Contained for nosy image stochestic process
+inp = np.zeros([Nr,Nc])
 
 sigN = 25.0 #Additive noise variance
 out = np.zeros([Nr,Nc]) #Container of the processed image
+acc = np.zeros([Nr,Nc])
 MSE = np.zeros(Nsample)
 #Create a nosy image ensamble
 for q in range(Nsample):
     noise = sigN * np.random.randn(Nr,Nc)
-    ens[:,:,q] = im + noise
-#    plt.figure(1)
-#    plt.title('Stochastic process of the noisy image')
-#    plt.imshow(abs(ens[:,:,q]), cmap='gray')
-#    pause(0.01)
-#    plt.show()
-#    plt.clf()
+    inp = im + noise
+    plt.figure(1)
+    plt.title('Stochastic process of the noisy image')
+    plt.imshow(abs(inp), cmap='gray')
+    pause(0.01)
+    plt.show()
+    plt.clf()
     
-    out = np.mean(ens,2) # Maximum-likelihood estimion of the output image (FAST)
+    # Maximum-likelihood estimion of the expected value of the output image (FAST)
+    acc = acc + inp
+    out = acc / (q+1)
+    
+    #out = np.mean(ens,2) # Maximum-likelihood estimion of the output image (FAST)
     
     # Maximum-likelihood estimion of the output image (SLOW)
     #for k in range(Nr):
@@ -55,8 +61,6 @@ for q in range(Nsample):
 print('Done!')
 
                         
-inp = ens[:,:,0].copy() #Example of noisy image for display
-
 leyend = 'Mean Squared Error: ' + str(MSE[q])
 print(leyend)
 plt.figure()
