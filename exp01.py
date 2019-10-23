@@ -11,9 +11,10 @@ This is a temporary script file.
 """
 
 # Import required libraries
-from scipy import *
+from skimage.io import imread
 import numpy as np
 import matplotlib.pyplot as plt
+from pylab import pause
 
 
 def rgb2gray(img):
@@ -21,43 +22,47 @@ def rgb2gray(img):
     return img_gray
         
 # Read image from disk
-im = 255*double( imread("peppers.png") )
+im = np.double( imread("peppers.png") )
 # Obtain image size
 Nr,Nc = im.shape
 
-Nsample = 100 #Number of noisy samples
+Nsample = 50 #Number of noisy samples
 
 ens = np.zeros([Nr,Nc,Nsample]) #Contained for nosy image stochestic process
 
 sigN = 25.0 #Additive noise variance
-
+out = np.zeros([Nr,Nc]) #Container of the processed image
+MAE = np.zeros(Nsample)
 #Create a nosy image ensamble
-for k in range(Nsample):
+for q in range(Nsample):
     noise = sigN * np.random.randn(Nr,Nc)
-    ens[:,:,k] = im + noise
+    ens[:,:,q] = im + noise
     plt.figure(1)
     plt.title('Stochastic process of the noisy image')
-    plt.imshow(abs(ens[:,:,k]), cmap='gray')
-    pause(0.001)
+    plt.imshow(abs(ens[:,:,q]), cmap='gray')
+    pause(0.01)
     plt.show()
     plt.clf()
     
-out = zeros([Nr,Nc]) #Container of the processed image
-
-#Estimation (Maximum-likelihood estimator) of the output image
-for k in range(Nr):
-    for l in range(Nc):
-        out[k,l] = mean(ens[k,l,:])
+    out = np.mean(ens,2) # Maximum-likelihood estimion of the output image (FAST!)
+    
+    # Maximum-likelihood estimion of the output image (SLOW)
+    #for k in range(Nr):
+    #    for l in range(Nc):
+    #        out[k,l] = np.mean(ens[k,l,np.arange(q)])
         
-inp  = ens[:,:,0]
+    MAE[q] = np.mean( abs( im - out )**2 ) #Calculation of the Mean-Absolute-Error
 print('Done!')
 
                         
-MAE = mean( abs( im - out )**2 ) #Calculation of the Mean-Absolute-Error
+#MAE = mean( abs( im - out )**2 ) #Calculation of the Mean-Absolute-Error
 
-leyend = 'Mean Absolute Error: ' + str(MAE)
+leyend = 'Mean Absolute Error: ' + str(MAE[q])
 print(leyend)
-#y2 = y2/y2[:].max()
-subplot(131), plt.imshow(uint8(im), cmap='gray'), plt.title('Undegraded Image')
-subplot(132), plt.imshow(uint8(abs(inp)), cmap='gray'), plt.title('Noisy Image')
-subplot(133), plt.imshow(uint8(abs(out)), cmap='gray'), plt.title('Processed Image')
+plt.figure()
+plt.subplot(131), plt.imshow(im, cmap='gray'), plt.title('Undegraded Image')
+plt.subplot(132), plt.imshow(abs(inp), cmap='gray'), plt.title('Noisy Image')
+plt.subplot(133), plt.imshow(abs(out), cmap='gray'), plt.title('Processed Image')
+
+plt.figure()
+plt.plot(MAE,'-.*'), plt.grid(), plt.xlabel('No. of noisy images (sample size)'), plt.ylabel('Mean Absolute Error'), plt.title('Performance of the MLE estimator')
