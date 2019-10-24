@@ -61,13 +61,25 @@ for q in range(Nsample):
 print('Done!')
 plt.close()
 
+MSE0 = np.mean( abs( im - inp )**2 ) #Calculation of the Mean-Absolute-Error
                         
 leyend = 'Mean Squared Error: ' + str(MSE[q])
 print(leyend)
 plt.figure(1)
-plt.subplot(131), plt.imshow(im, cmap='gray'), plt.title('Undegraded Image (Reference)')
-plt.subplot(132), plt.imshow(abs(inp), cmap='gray'), plt.title('Noisy Image (Input)')
-plt.subplot(133), plt.imshow(abs(out), cmap='gray'), plt.title('Processed Image (Output)')
+
+plt.subplot(131)
+plt.imshow(im, cmap='gray')
+plt.title('Undegraded Image (Reference)')
+
+plt.subplot(132)
+plt.imshow(abs(inp), cmap='gray')
+plt.title('Noisy Image (Input)')
+plt.xlabel('MSE = ' + str(np.float16(MSE0)))  
+
+plt.subplot(133)
+plt.imshow(abs(out), cmap='gray')
+plt.title('Processed Image (Output)')
+plt.xlabel('MSE = ' + str(np.float16(MSE[q])))  
 
 plt.figure(2)
 plt.plot(MSE,'-.*'), plt.grid(), plt.xlabel('No. of noisy images (sample size)'), plt.ylabel('Mean Squared Error (MSE)'), plt.title('Performance of the MLE estimator')
