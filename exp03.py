@@ -21,11 +21,12 @@ This is a temporary script file.
 
 from scipy import *
 from pylab import *
-from scipy.misc import imresize
-from scipy.misc import imsave
-import cv2
-from cv2.ximgproc import guidedFilter
-from skimage.restoration import denoise_tv_chambolle, denoise_bilateral
+from skimage.io import imread
+#from scipy.misc import imresize
+#from scipy.misc import imsave
+#import cv2
+#from cv2.ximgproc import guidedFilter
+#from skimage.restoration import denoise_tv_chambolle, denoise_bilateral
 
 def KNB(mw,K):
     r,c = mw.shape
@@ -45,6 +46,7 @@ def EV(mw,ev):
     cent = mw[int(floor(r/2)), int(floor(c/2))]
     x,y = where( mw >= (cent-ev) )
     nbh0 = ravel(mw[x,y])
+    x = 0
     x = where( nbh0 <= (cent + ev) )
     nbh = nbh0[x]
     return nbh
@@ -59,20 +61,24 @@ S = 15 # Define the size of sliding-window (SxS)
 #f_sin = 255*double(imread("original.png")) # Read Original Undegraded Image
 
 ### Construction of a synthetic image degraded with haze
-im = 255*double( imread("lena512.png") )
+im = double( imread("cameraman.png") )
 Nr,Nc = im.shape 
-sigN = 20.0
-noise = sigN * np.random.randn(Nr,Nc)
+
+sigN = 25.0
+noise = np.random.normal(0, sigN, [Nr,Nc])
+
+#sigN = 20.0
+#noise = sigN * np.random.randn(Nr,Nc)
 inp = im + noise
 
 #########################################
 # Extend input image for edge processing
-A1 = concatenate((flipud(fliplr(inp)), flipud(inp), flipud(fliplr(inp))), axis=1)
-A2 = concatenate((fliplr(inp), inp, fliplr(inp)), axis=1)
-A3 = concatenate((flipud(fliplr(inp)), flipud(inp), flipud(fliplr(inp))), axis=1)
-f_proc = concatenate( (A1,A2,A3) ,axis=0)
+A1 = np.concatenate((np.flipud(np.fliplr(inp)), np.flipud(inp), np.flipud(np.fliplr(inp))), axis=1)
+A2 = np.concatenate((np.fliplr(inp), inp, np.fliplr(inp)), axis=1)
+A3 = np.concatenate((np.flipud(np.fliplr(inp)), np.flipud(inp), np.flipud(np.fliplr(inp))), axis=1)
+f_proc = np.concatenate( (A1,A2,A3) ,axis=0)
+f_proc = f_proc[Nr-int((S-1)/2):2*Nr+int((S-1)/2), Nc-int((S-1)/2):2*Nc+int((S-1)/2)]
 
-f_proc = f_proc[Nr-((S-1)/2):2*Nr+((S-1)/2), Nc-((S-1)/2):2*Nc+((S-1)/2)]
 #pause
 #A_test = zeros([Nr,Nc])
 #A_test2 = zeros([Nr,Nc])
@@ -93,6 +99,6 @@ MAE = mean( abs( im - out )**2 )
 leyend = 'Mean Absolute Error: ' + str(MAE)
 print(leyend)
 
-subplot(131), imshow(uint8(im)), title('Undegraded Image'), gray()
-subplot(132), imshow(uint8(abs(inp))), title('Noisy Image')
-subplot(133), imshow(uint8(out)), title('Undegraded Image')
+subplot(131), imshow(im), title('Undegraded Image'), gray()
+subplot(132), imshow(inp), title('Noisy Image')
+subplot(133), imshow(out), title('Undegraded Image')
